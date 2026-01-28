@@ -25,8 +25,7 @@ target_include_directories(Timepad PRIVATE
 )
 
 # Link libraries
-target_link_libraries(Lastand-Client PRIVATE 
-    Lastand-Core 
+target_link_libraries(Timepad PRIVATE
     SDL3::SDL3
 )
 
