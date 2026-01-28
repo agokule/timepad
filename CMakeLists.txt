@@ -17,7 +17,7 @@ add_executable(Timepad ${CLIENT_SOURCES}
 target_compile_definitions(Timepad PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
 # Include directories
-target_include_directories(Timepad PRIVATE 
+target_include_directories(Timepad PRIVATE
     ./src
     ./dependencies/imgui
     ./dependencies/imgui/misc/cpp
