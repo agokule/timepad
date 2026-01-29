@@ -138,7 +138,6 @@ local function run_task(cmd, title, id, next_task)
             notify_progress(id, title, newline)
         end,
     }, function(obj)
-        vim.print(output)
         if obj.code ~= 0 then
             vim.schedule(function()
                 vim.notify(title .. " failed with code " .. obj.code, "error")
@@ -160,3 +159,5 @@ end
 
 vim.keymap.set('n', '<leader>rb', function() config(config_dbg) end)
 vim.keymap.set('n', '<leader>rB', function() config(config_rel) end)
+vim.keymap.set('n', '<leader>rp', function() vim.cmd('botright sp') vim.cmd.terminal('./build/Timepad') end)
+
