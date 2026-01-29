@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
+include(FetchContent)
 
 project(Timepad LANGUAGES CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE CLIENT_SOURCES "src/*.cpp" "src/*.h")
 
@@ -22,7 +28,10 @@ target_include_directories(Timepad PRIVATE
     ./dependencies/imgui
     ./dependencies/imgui/misc/cpp
     ./dependencies/imgui/backends/
+    ./dependencies/SDL3/include/
 )
+
+add_subdirectory(./dependencies/SDL3/ EXCLUDE_FROM_ALL)
 
 # Link libraries
 target_link_libraries(Timepad PRIVATE
