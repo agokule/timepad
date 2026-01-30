@@ -9,10 +9,12 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include <thread>
+#include "IconsFontAwesome7.h"
 
 struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
+    ImFont* font_awesome;
 };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -28,7 +30,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    state->font_awesome = io.Fonts->AddFontDefault();
+
+    // merge in icons from Font Awesome
+    ImFontConfig icons_config; 
+    icons_config.MergeMode = true; 
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Regular-400.otf", 13.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Solid-900.otf", 13.0f, &icons_config);
 
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForSDLRenderer(state->window, state->renderer);
@@ -61,9 +70,16 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     ImGui_ImplSDL3_NewFrame();
     ImGui_ImplSDLRenderer3_NewFrame();
+
     ImGui::NewFrame();
 
-    ImGui::Button("Hello");
+    ImGui::Begin("Hello");
+    ImGui::Button("Hello " ICON_FA_PLAY ICON_FA_CIRCLE_PLAY);
+    ImGui::End();
+
+    ImGui::DebugTextEncoding(ICON_FA_PLAY ICON_FA_BATH ICON_FA_CIRCLE_PLAY ICON_FA_CIRCLE_DOT);
+
+    ImGui::ShowDemoWindow();
 
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
