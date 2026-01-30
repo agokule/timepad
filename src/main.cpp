@@ -14,7 +14,6 @@
 struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
-    ImFont* font_awesome;
 };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
@@ -31,13 +30,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
-    state->font_awesome = io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/Roboto-Regular.ttf", 17.0f);
 
     // merge in icons from Font Awesome
     ImFontConfig icons_config; 
     icons_config.MergeMode = true; 
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Regular-400.otf", 13.0f, &icons_config);
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Solid-900.otf", 13.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Regular-400.otf", 0.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Solid-900.otf", 0.0f, &icons_config);
 
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForSDLRenderer(state->window, state->renderer);
