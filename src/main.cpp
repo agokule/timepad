@@ -83,12 +83,8 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     draw_sidebar(state.current_tab);
 
-    state.progress.set_progress((SDL_GetTicks() % 2000) / 2000.0);
-
-    if (!state.progress.draw(renderer))
-        return SDL_APP_FAILURE;
-
-    ImGui::DebugTextEncoding(ICON_FA_CIRCLE_DOT ICON_FA_CIRCLE);
+    if (state.current_tab == CurrentTab::Timer)
+        state.td.draw(renderer);
 
     ImGui::ShowDemoWindow();
 
