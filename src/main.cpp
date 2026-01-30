@@ -1,3 +1,5 @@
+#include "SDL3/SDL_blendmode.h"
+#include "SDL3/SDL_hints.h"
 #include "SDL3/SDL_log.h"
 #include <iostream>
 
@@ -26,6 +28,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     state->current_tab = CurrentTab::PomodoroTimer;
 
     SDL_SetRenderVSync(state->renderer, 1);
+    SDL_SetRenderDrawBlendMode(state->renderer, SDL_BLENDMODE_BLEND);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -70,6 +73,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState &state = *static_cast<AppState*>(appstate);
     SDL_Renderer *renderer = state.renderer;
 
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     ImGui_ImplSDL3_NewFrame();
@@ -78,6 +82,11 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     ImGui::NewFrame();
 
     draw_sidebar(state.current_tab);
+
+    state.progress.set_progress((SDL_GetTicks() % 2000) / 2000.0);
+
+    if (!state.progress.draw(renderer))
+        return SDL_APP_FAILURE;
 
     ImGui::DebugTextEncoding(ICON_FA_CIRCLE_DOT ICON_FA_CIRCLE);
 
