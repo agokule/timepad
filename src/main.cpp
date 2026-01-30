@@ -1,4 +1,5 @@
 #include "SDL3/SDL_log.h"
+#include "imgui_internal.h"
 #include <iostream>
 
 #define SDL_MAIN_USE_CALLBACKS
@@ -10,11 +11,9 @@
 #include "imgui_impl_sdlrenderer3.h"
 #include <thread>
 #include "IconsFontAwesome7.h"
-
-struct AppState {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-};
+#include "IconsMaterialSymbols.h"
+#include "appstate.hpp"
+#include "ui.hpp"
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     AppState *state = new AppState;
@@ -24,6 +23,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    state->current_tab = CurrentTab::PomodoroTimer;
+
+    SDL_SetRenderVSync(state->renderer, 1);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -37,6 +40,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     icons_config.MergeMode = true; 
     io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Regular-400.otf", 0.0f, &icons_config);
     io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Solid-900.otf", 0.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF("./assets/fonts/MaterialSymbolsRounded-Regular.ttf", 0.0f, &icons_config);
 
     ImGui::StyleColorsDark();
     ImGui_ImplSDL3_InitForSDLRenderer(state->window, state->renderer);
@@ -67,16 +71,16 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     AppState &state = *static_cast<AppState*>(appstate);
     SDL_Renderer *renderer = state.renderer;
 
+    SDL_RenderClear(renderer);
+
     ImGui_ImplSDL3_NewFrame();
     ImGui_ImplSDLRenderer3_NewFrame();
 
     ImGui::NewFrame();
 
-    ImGui::Begin("Hello");
-    ImGui::Button("Hello " ICON_FA_PLAY ICON_FA_CIRCLE_PLAY);
-    ImGui::End();
+    draw_sidebar(state.current_tab);
 
-    ImGui::DebugTextEncoding(ICON_FA_PLAY ICON_FA_BATH ICON_FA_CIRCLE_PLAY ICON_FA_CIRCLE_DOT);
+    ImGui::DebugTextEncoding(ICON_FA_CIRCLE_DOT ICON_FA_CIRCLE);
 
     ImGui::ShowDemoWindow();
 
