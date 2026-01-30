@@ -159,5 +159,5 @@ end
 
 vim.keymap.set('n', '<leader>rb', function() config(config_dbg) end)
 vim.keymap.set('n', '<leader>rB', function() config(config_rel) end)
-vim.keymap.set('n', '<leader>rp', function() vim.cmd('botright sp') vim.cmd.terminal('./build/Timepad') end)
+vim.keymap.set('n', '<leader>rp', function() vim.cmd('botright 20sp') vim.cmd.terminal('./build/Timepad') end)
 
