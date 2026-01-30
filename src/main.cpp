@@ -1,5 +1,4 @@
 #include "SDL3/SDL_log.h"
-#include "imgui_internal.h"
 #include <iostream>
 
 #define SDL_MAIN_USE_CALLBACKS

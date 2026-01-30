@@ -47,18 +47,16 @@ void draw_sidebar(CurrentTab& current_tab) {
     for (CurrentTab ct : {CurrentTab::PomodoroTimer, CurrentTab::Timer, CurrentTab::Alarms, CurrentTab::Stopwatch}) {
         bool changed = false;
         ImVec4 orig = colors[ImGuiCol_Button];
-        if (ct == current_tab) {
+        if (ct == current_tab)
             colors[ImGuiCol_Button] = ImVec4(0.59f, 0.59f, 0.59f, 0.40f);
-        }
 
         if (ImGui::Button(std::format("{} {}", CurrentTab_to_icon(ct), CurrentTab_to_str(ct)).c_str())) {
             current_tab = ct;
             changed = true;
         }
 
-        if (ct == current_tab && !changed) {
+        if (ct == current_tab && !changed)
             colors[ImGuiCol_Button] = orig;
-        }
     }
 
     ImGui::End();

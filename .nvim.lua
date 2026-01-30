@@ -161,4 +161,5 @@ vim.keymap.set('n', '<leader>rb', function() config(config_dbg) end)
 vim.keymap.set('n', '<leader>rB', function() config(config_rel) end)
 vim.keymap.set('n', '<leader>rp', function() vim.cmd('botright 20sp') vim.cmd.terminal('./build/Timepad') end)
 vim.keymap.set('n', '<leader>fm', function() vim.cmd.edit('./src/main.cpp') end)
+vim.keymap.set('n', '<leader>fu', function() vim.cmd.edit('./src/ui.cpp') end)
 
