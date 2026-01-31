@@ -184,8 +184,6 @@ void TimerDisplay::draw(SDL_Renderer* renderer) {
     // Calculate center for circular progress bar
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 window_pos = ImGui::GetWindowPos();
-    std::println("{}x{} ({}, {})", window_size.x, window_size.y, window_pos.x, window_pos.y);
-    std::println("12");
 
     float center_x = window_size.x * 0.5f;
     float center_y = window_size.y * 0.45f;
