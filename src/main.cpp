@@ -13,7 +13,7 @@
 #include "IconsFontAwesome7.h"
 #include "IconsMaterialSymbols.h"
 #include "appstate.hpp"
-#include "ui.hpp"
+#include "ui/sidebar.hpp"
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     AppState *state = new AppState;

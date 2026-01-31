@@ -25,6 +25,8 @@ public:
     // Set the label text (e.g., "1 min")
     void set_label(const char* label);
 
+    const CircularProgressBar& get_progress() { return progress_barM; }
+
 private:
     CircularProgressBar progress_barM;
     int timer_secondsM;

@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include "timer_display.hpp"
+#include "ui/timer_display.hpp"
 
 enum class CurrentTab {
     PomodoroTimer = 1,
