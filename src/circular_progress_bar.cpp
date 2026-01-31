@@ -13,10 +13,6 @@ CircularProgressBar::CircularProgressBar(float center_x, float center_y, float r
     progress_colorM = {220, 80, 30, 255};
 }
 
-CircularProgressBar::~CircularProgressBar() {
-    // Nothing to clean up
-}
-
 void CircularProgressBar::set_progress(float progress) {
     // Clamp progress between 0 and 1
     if (progress < 0.0f) {

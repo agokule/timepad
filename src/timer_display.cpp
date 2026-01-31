@@ -1,45 +1,31 @@
 #include "timer_display.hpp"
 #include "IconsFontAwesome7.h"
 #include "IconsMaterialSymbols.h"
+#include "SDL3/SDL_timer.h"
 #include "imgui.h"
-#include <format>
 #include <cstdio>
 
 TimerDisplay::TimerDisplay() 
-    : timer_seconds(60)
-    , progress(0.0f)
-    , label("1 min")
-    , is_playing(false)
+    : timer_secondsM(60)
+    , start_time_msM(0)
+    , progress_barM(0, 0, 100, 12)
 {
-    // Create circular progress bar
-    // These values will be adjusted based on window size during draw
-    progress_bar = std::make_unique<CircularProgressBar>(0, 0, 100, 12);
-    
-    // Set colors for the progress bar
-    progress_bar->set_background_color(240, 240, 240, 255);
-    progress_bar->set_progress_color(66, 133, 244, 255);  // Blue color
-}
-
-TimerDisplay::~TimerDisplay() {
 }
 
 void TimerDisplay::set_timer_value(int seconds) {
-    timer_seconds = seconds;
+    timer_secondsM = seconds;
 }
 
-void TimerDisplay::set_progress(float prog) {
-    progress = prog;
-    progress_bar->set_progress(prog);
+void TimerDisplay::update() {
+    auto now = SDL_GetTicks();
+    auto progress_secondsM = (now - start_time_msM);
+
+    progress_barM.set_progress((float)progress_secondsM / (timer_secondsM * 1000));
 }
 
 void TimerDisplay::reset() {
-    progress = 0.0f;
-    is_playing = false;
-    progress_bar->reset();
-}
-
-void TimerDisplay::set_label(const char* lbl) {
-    label = lbl;
+    start_time_msM = 0;
+    progress_barM.reset();
 }
 
 void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
@@ -53,7 +39,9 @@ void TimerDisplay::draw_header() {
     ImGui::BeginGroup();
     
     // Left side - label text
-    ImGui::Text("%s", label);
+    char time_buffer[32];
+    format_time(timer_secondsM, time_buffer, sizeof(time_buffer));
+    ImGui::Text("%s", time_buffer);
     
     // Right side - action buttons
     ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80);
@@ -75,7 +63,8 @@ void TimerDisplay::draw_header() {
 
 void TimerDisplay::draw_timer_text() {
     char time_buffer[32];
-    format_time(timer_seconds, time_buffer, sizeof(time_buffer));
+    auto progress_secondsM = (SDL_GetTicks() - start_time_msM) / 1000;
+    format_time(timer_secondsM - progress_secondsM, time_buffer, sizeof(time_buffer));
     
     // Calculate center position for text
     ImVec2 window_center = ImGui::GetWindowSize();
@@ -83,14 +72,14 @@ void TimerDisplay::draw_timer_text() {
     window_center.y *= 0.5f;
     
     // Large font for timer display
-    ImGui::PushFont(NULL);  // You can push a larger font here if available
+    ImGui::PushFont(NULL, 26.0f);  // You can push a larger font here if available
     
     // Calculate text size and center it
     ImVec2 text_size = ImGui::CalcTextSize(time_buffer);
     ImGui::SetCursorPos(ImVec2(window_center.x - text_size.x * 0.5f, 
                                 window_center.y - text_size.y * 0.5f));
     
-    ImGui::TextColored(ImVec4(0.3f, 0.3f, 0.3f, 1.0f), "%s", time_buffer);
+    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", time_buffer);
     
     ImGui::PopFont();
 }
@@ -120,10 +109,9 @@ void TimerDisplay::draw_control_buttons() {
     
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);  // Make circular
     
-    const char* play_text = is_playing ? ICON_FA_PAUSE : ICON_FA_PLAY;
-    if (ImGui::Button(play_text, ImVec2(button_size, button_size))) {
-        is_playing = !is_playing;
-    }
+    const char* play_text = start_time_msM != 0 ? ICON_FA_PAUSE : ICON_FA_PLAY;
+    if (ImGui::Button(play_text, ImVec2(button_size, button_size)))
+        this->start();
     
     ImGui::PopStyleVar();
     
@@ -144,7 +132,12 @@ void TimerDisplay::draw_control_buttons() {
     ImGui::PopStyleVar();
 }
 
+void TimerDisplay::start() {
+    start_time_msM = SDL_GetTicks();
+}
+
 void TimerDisplay::draw(SDL_Renderer* renderer) {
+    ImGui::SetNextWindowBgAlpha(0.3);
     ImGui::Begin("Timer Display");
 
     // Draw header with label and action buttons
@@ -153,25 +146,25 @@ void TimerDisplay::draw(SDL_Renderer* renderer) {
     ImGui::Spacing();
     ImGui::Spacing();
     
+    // Draw the timer text in the center
+    draw_timer_text();
+
     // Calculate center for circular progress bar
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 window_pos = ImGui::GetWindowPos();
     float center_x = window_size.x * 0.5f;
     float center_y = window_size.y * 0.45f;  // Slightly above center
     float radius = 120.0f;
-    
+
     // Update progress bar position
-    progress_bar->set_position(center_x + window_pos.x, center_y + window_pos.y);
-    progress_bar->set_radius(radius);
-    
-    // Draw the timer text in the center
-    draw_timer_text();
+    progress_barM.set_position(center_x + window_pos.x, center_y + window_pos.y);
+    progress_barM.set_radius(radius);
+
+    // Draw the circular progress bar
+    progress_barM.draw(renderer);
     
     // Draw control buttons at the bottom
     draw_control_buttons();
 
     ImGui::End();
-
-    // Draw the circular progress bar
-    progress_bar->draw(renderer);
 }

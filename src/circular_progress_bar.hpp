@@ -6,7 +6,6 @@
 class CircularProgressBar {
 public:
     CircularProgressBar(float center_x, float center_y, float radius, float thickness);
-    ~CircularProgressBar();
 
     // Set the progress (0.0 to 1.0)
     void set_progress(float progress);

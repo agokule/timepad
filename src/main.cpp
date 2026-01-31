@@ -1,5 +1,4 @@
 #include "SDL3/SDL_blendmode.h"
-#include "SDL3/SDL_hints.h"
 #include "SDL3/SDL_log.h"
 #include <iostream>
 
@@ -83,8 +82,10 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     draw_sidebar(state.current_tab);
 
-    if (state.current_tab == CurrentTab::Timer)
+    if (state.current_tab == CurrentTab::Timer) {
+        state.td.update();
         state.td.draw(renderer);
+    }
 
     ImGui::ShowDemoWindow();
 
