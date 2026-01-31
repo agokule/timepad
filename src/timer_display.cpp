@@ -3,7 +3,9 @@
 #include "IconsMaterialSymbols.h"
 #include "SDL3/SDL_timer.h"
 #include "imgui.h"
+#include <algorithm>
 #include <cstdio>
+#include <print>
 
 TimerDisplay::TimerDisplay() 
     : timer_secondsM(60)
@@ -37,6 +39,14 @@ void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
 
 void TimerDisplay::draw_header() {
     ImGui::BeginGroup();
+    float defualt_button_size = 35.0f;
+    float button_size = defualt_button_size;
+    ImVec2 window_size = ImGui::GetWindowSize();
+
+    if (std::min(window_size.x, window_size.y) < 250.0f) {
+        button_size = 20.0f;
+        ImGui::PushFont(nullptr, ImGui::GetFontSize() - 5.0f);
+    }
     
     // Left side - label text
     char time_buffer[32];
@@ -44,19 +54,22 @@ void TimerDisplay::draw_header() {
     ImGui::Text("%s", time_buffer);
     
     // Right side - action buttons
-    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80);
+    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80 + (defualt_button_size - button_size) * 2);
     
     // Expand button
-    if (ImGui::Button(ICON_FA_EXPAND, ImVec2(35, 35))) {
+    if (ImGui::Button(ICON_FA_EXPAND, ImVec2(button_size, button_size))) {
         // Expand action
     }
     
     ImGui::SameLine();
     
     // Settings/Close button
-    if (ImGui::Button(ICON_MS_PIP, ImVec2(35, 35))) {
+    if (ImGui::Button(ICON_MS_PIP, ImVec2(button_size, button_size))) {
         // Close action
     }
+
+    if (button_size < defualt_button_size)
+        ImGui::PopFont();
     
     ImGui::EndGroup();
 }
@@ -66,33 +79,50 @@ void TimerDisplay::draw_timer_text() {
     auto progress_secondsM = (SDL_GetTicks() - start_time_msM) / 1000;
     format_time(timer_secondsM - progress_secondsM, time_buffer, sizeof(time_buffer));
     
+    // Large font for timer display
+    ImGui::PushFont(NULL, 30.0f);
+
     // Calculate center position for text
     ImVec2 window_center = ImGui::GetWindowSize();
     window_center.x *= 0.5f;
-    window_center.y *= 0.5f;
-    
-    // Large font for timer display
-    ImGui::PushFont(NULL, 26.0f);  // You can push a larger font here if available
+    window_center.y *= 0.45f;
     
     // Calculate text size and center it
     ImVec2 text_size = ImGui::CalcTextSize(time_buffer);
+    float surface_area_ratio = (text_size.x * text_size.y) / (window_center.x * window_center.y);
+    float optimal_font_size {};
+    if (surface_area_ratio >= 0.15f)
+        optimal_font_size = 32.0f - 36 * surface_area_ratio;
+    else
+        optimal_font_size = 32.0f + (1 / surface_area_ratio * 0.7f);
+    ImGui::PopFont();
+    ImGui::PushFont(nullptr, optimal_font_size);
+    text_size = ImGui::CalcTextSize(time_buffer);
+
     ImGui::SetCursorPos(ImVec2(window_center.x - text_size.x * 0.5f, 
                                 window_center.y - text_size.y * 0.5f));
     
-    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", time_buffer);
+    ImGui::TextColored(ImVec4(0.263f, 0.49f, 0.525f, 1.0f), "%s", time_buffer);
     
     ImGui::PopFont();
 }
 
 void TimerDisplay::draw_control_buttons() {
     ImVec2 window_size = ImGui::GetWindowSize();
-    float button_size = 50.0f;
+    float defualt_button_size = 50.0f;
+    float button_size = defualt_button_size;
     float spacing = 20.0f;
+
+    if (std::min(window_size.x, window_size.y) < 250.0f)
+        button_size = 30.0f;
     
     // Calculate center position for buttons
     float total_width = button_size * 2 + spacing;
     float start_x = (window_size.x - total_width) * 0.5f;
-    float button_y = window_size.y - 70.0f;
+    float button_y = window_size.y - 60.0f + (defualt_button_size - button_size);
+
+    if (button_size < defualt_button_size)
+        ImGui::PushFont(nullptr, ImGui::GetFontSize() - 5.0f);
     
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
     
@@ -130,6 +160,8 @@ void TimerDisplay::draw_control_buttons() {
     }
     
     ImGui::PopStyleVar();
+    if (button_size < defualt_button_size)
+        ImGui::PopFont();
 }
 
 void TimerDisplay::start() {
@@ -138,7 +170,7 @@ void TimerDisplay::start() {
 
 void TimerDisplay::draw(SDL_Renderer* renderer) {
     ImGui::SetNextWindowBgAlpha(0.3);
-    ImGui::Begin("Timer Display");
+    ImGui::Begin("Timer Display", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
 
     // Draw header with label and action buttons
     draw_header();
@@ -152,9 +184,15 @@ void TimerDisplay::draw(SDL_Renderer* renderer) {
     // Calculate center for circular progress bar
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 window_pos = ImGui::GetWindowPos();
+    std::println("{}x{} ({}, {})", window_size.x, window_size.y, window_pos.x, window_pos.y);
+    std::println("12");
+
     float center_x = window_size.x * 0.5f;
-    float center_y = window_size.y * 0.45f;  // Slightly above center
-    float radius = 120.0f;
+    float center_y = window_size.y * 0.45f;
+    float radius = 0.4f * std::min(window_size.x, window_size.y - 65);
+
+    float optimal_thickness = 4.0f / 100 * std::min(window_size.x, window_size.y);
+    progress_barM.set_thickness(optimal_thickness);
 
     // Update progress bar position
     progress_barM.set_position(center_x + window_pos.x, center_y + window_pos.y);
