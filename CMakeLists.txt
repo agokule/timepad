@@ -10,6 +10,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE CLIENT_SOURCES "src/*.cpp" "src/*.h")
 
+if (GCC)
+    add_compile_options("$<$<CONFIG:Debug>:-g3;-O0>")
+endif()
+
 add_executable(Timepad ${CLIENT_SOURCES}
     ./dependencies/imgui/imgui.cpp
     ./dependencies/imgui/imgui_draw.cpp
