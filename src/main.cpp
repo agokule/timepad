@@ -92,20 +92,37 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     ImGui::NewFrame();
 
-    draw_sidebar(state.current_tab);
+    if (state.focus_state.type == FocusType::None) {
+        draw_sidebar(state.current_tab);
 
-    if (state.current_tab == CurrentTab::Timer) {
-        for (TimerDisplay& timer : state.timers) {
-            timer.update();
-            timer.draw(renderer);
+        if (state.current_tab == CurrentTab::Timer) {
+            for (TimerDisplay& timer : state.timers) {
+                timer.update();
+                auto focus_state = timer.draw(renderer);
+                if (focus_state.has_value())
+                    state.focus_state = *focus_state;
+            }
+
+            auto new_timer = state.timer_creater.draw();
+            if (new_timer.has_value())
+                state.timers.push_back(*new_timer);
         }
 
-        auto new_timer = state.timer_creater.draw();
-        if (new_timer.has_value())
-            state.timers.push_back(*new_timer);
+        ImGui::ShowDemoWindow();
+    } else if (state.focus_state.type == FocusType::Fullscreen) {
+        assert(state.focus_state.what_is_focused.has_value());
+        if (*state.focus_state.what_is_focused == WhatIsFullscreen::Timer) {
+            assert(state.focus_state.id_of_focussed.has_value());
+            for (auto& timer : state.timers) {
+                if (timer.get_id() != *state.focus_state.id_of_focussed)
+                    continue;
+                auto focus_state = timer.draw(renderer);
+                if (focus_state.has_value())
+                    state.focus_state = *focus_state;
+                break;
+            }
+        }
     }
-
-    ImGui::ShowDemoWindow();
 
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);

@@ -3,6 +3,7 @@
 
 #include "circular_progress_bar.hpp"
 #include <SDL3/SDL.h>
+#include "appstate.hpp"
 
 class TimerDisplay {
 public:
@@ -10,7 +11,7 @@ public:
     TimerDisplay(int timer_seconds);
 
     // Draw the timer UI
-    void draw(SDL_Renderer* renderer);
+    std::optional<FocusState> draw(SDL_Renderer* renderer);
 
     // Set the timer value (total time) in seconds
     void set_timer_value(int seconds);
@@ -26,16 +27,18 @@ public:
     // Set the label text (e.g., "1 min")
     void set_label(const char* label);
 
-    const CircularProgressBar& get_progress() { return progress_barM; }
+    const CircularProgressBar& get_progress() const { return progress_barM; }
+    const unsigned long& get_id() const { return idM; }
 
 private:
     CircularProgressBar progress_barM;
     int timer_secondsM;
     unsigned long start_time_msM;
     unsigned long idM;
+    FocusType focusM;
     
     // Helper methods
-    void draw_header();
+    std::optional<FocusState> draw_header();
     void draw_timer_text();
     void draw_control_buttons();
     void format_time(int seconds, char* buffer, size_t buffer_size);

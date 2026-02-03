@@ -2,10 +2,12 @@
 #include "IconsFontAwesome7.h"
 #include "IconsMaterialSymbols.h"
 #include "SDL3/SDL_timer.h"
+#include "appstate.hpp"
 #include "imgui.h"
 #include "ui/circular_progress_bar.hpp"
 #include <algorithm>
 #include <cstdio>
+#include <optional>
 #include <print>
 
 TimerDisplay::TimerDisplay() 
@@ -13,6 +15,7 @@ TimerDisplay::TimerDisplay()
     , start_time_msM(0)
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
+    , focusM(FocusType::None)
 {
 }
 
@@ -21,6 +24,7 @@ TimerDisplay::TimerDisplay(int timer_seconds)
     , start_time_msM(0)
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
+    , focusM(FocusType::None)
 {
 }
 
@@ -50,7 +54,9 @@ void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
     snprintf(buffer, buffer_size, "%02d:%02d:%02d", hours, minutes, secs);
 }
 
-void TimerDisplay::draw_header() {
+std::optional<FocusState> TimerDisplay::draw_header() {
+    std::optional<FocusState> return_val = std::nullopt; 
+
     ImGui::BeginGroup();
     float defualt_button_size = 35.0f;
     float button_size = defualt_button_size;
@@ -70,21 +76,40 @@ void TimerDisplay::draw_header() {
     ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80 + (defualt_button_size - button_size) * 2);
     
     // Expand button
-    if (ImGui::Button(ICON_FA_EXPAND, ImVec2(button_size, button_size))) {
-        // Expand action
+    const char* icon = ICON_FA_EXPAND;
+    if (focusM == FocusType::Fullscreen)
+        icon = ICON_FA_COMPRESS;
+    if (ImGui::Button(icon, ImVec2(button_size, button_size))) {
+        if (focusM == FocusType::None)
+            return_val = {
+                {WhatIsFullscreen::Timer},
+                FocusType::Fullscreen ,
+                {idM}
+            };
+        else if (focusM == FocusType::Fullscreen)
+            return_val = {
+                std::nullopt,
+                FocusType::None,
+                std::nullopt,
+            };
     }
     
     ImGui::SameLine();
     
-    // Settings/Close button
-    if (ImGui::Button(ICON_MS_PIP, ImVec2(button_size, button_size))) {
-        // Close action
-    }
+    // Picture-In-Picture button
+    if (ImGui::Button(ICON_MS_PIP, ImVec2(button_size, button_size)))
+        return_val = {
+            {WhatIsFullscreen::Timer},
+            FocusType::Popout,
+            {idM}
+        };
 
     if (button_size < defualt_button_size)
         ImGui::PopFont();
     
     ImGui::EndGroup();
+
+    return return_val;
 }
 
 void TimerDisplay::draw_timer_text() {
@@ -182,14 +207,23 @@ void TimerDisplay::start() {
     std::println("Starting timer: {}", start_time_msM);
 }
 
-void TimerDisplay::draw(SDL_Renderer* renderer) {
+std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer) {
     ImGui::SetNextWindowBgAlpha(0.3);
 
+    std::optional<FocusState> return_val = std::nullopt; 
+
     ImGui::SetNextWindowSizeConstraints({150.0f, 150.0f}, {FLT_MAX, FLT_MAX});
-    ImGui::Begin(std::format("Timer Display ##{}", idM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    if (focusM != FocusType::None) {
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+    }
+
+    ImGui::Begin(std::format("Timer Display ##{},{}", idM, (int)focusM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
 
     // Draw header with label and action buttons
-    draw_header();
+    return_val = draw_header();
+    if (return_val.has_value())
+        this->focusM = return_val->type;
     
     ImGui::Spacing();
     ImGui::Spacing();
@@ -219,4 +253,6 @@ void TimerDisplay::draw(SDL_Renderer* renderer) {
     draw_control_buttons();
 
     ImGui::End();
+
+    return return_val;
 }
