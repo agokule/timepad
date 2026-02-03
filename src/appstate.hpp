@@ -11,12 +11,3 @@ enum class CurrentTab {
     Stopwatch
 };
 
-struct AppState {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    CurrentTab current_tab;
-    std::vector<TimerDisplay> timers;
-    TimerCreater timer_creater;
-};
-
-

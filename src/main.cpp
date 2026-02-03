@@ -15,6 +15,17 @@
 #include "IconsMaterialSymbols.h"
 #include "appstate.hpp"
 #include "ui/sidebar.hpp"
+#include "ui/timer_creater.hpp"
+#include <vector>
+
+struct AppState {
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    CurrentTab current_tab;
+    std::vector<TimerDisplay> timers;
+    TimerCreater timer_creater;
+    FocusState focus_state;
+};
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     AppState *state = new AppState;
