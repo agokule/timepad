@@ -1,5 +1,6 @@
 #include "SDL3/SDL_blendmode.h"
 #include "SDL3/SDL_log.h"
+#include "ui/timer_display.hpp"
 #include <iostream>
 
 #define SDL_MAIN_USE_CALLBACKS
@@ -83,8 +84,14 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     draw_sidebar(state.current_tab);
 
     if (state.current_tab == CurrentTab::Timer) {
-        state.td.update();
-        state.td.draw(renderer);
+        for (TimerDisplay& timer : state.timers) {
+            timer.update();
+            timer.draw(renderer);
+        }
+
+        auto new_timer = state.timer_creater.draw();
+        if (new_timer.has_value())
+            state.timers.push_back(*new_timer);
     }
 
     ImGui::ShowDemoWindow();

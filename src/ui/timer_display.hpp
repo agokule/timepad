@@ -7,6 +7,7 @@
 class TimerDisplay {
 public:
     TimerDisplay();
+    TimerDisplay(int timer_seconds);
 
     // Draw the timer UI
     void draw(SDL_Renderer* renderer);
@@ -30,7 +31,8 @@ public:
 private:
     CircularProgressBar progress_barM;
     int timer_secondsM;
-    unsigned long long start_time_msM;
+    unsigned long start_time_msM;
+    unsigned long idM;
     
     // Helper methods
     void draw_header();

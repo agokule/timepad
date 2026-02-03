@@ -1,6 +1,8 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include "ui/timer_creater.hpp"
 #include "ui/timer_display.hpp"
+#include <vector>
 
 enum class CurrentTab {
     PomodoroTimer = 1,
@@ -13,7 +15,8 @@ struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
     CurrentTab current_tab;
-    TimerDisplay td;
+    std::vector<TimerDisplay> timers;
+    TimerCreater timer_creater;
 };
 
 

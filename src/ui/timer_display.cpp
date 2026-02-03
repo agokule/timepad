@@ -3,6 +3,7 @@
 #include "IconsMaterialSymbols.h"
 #include "SDL3/SDL_timer.h"
 #include "imgui.h"
+#include "ui/circular_progress_bar.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <print>
@@ -11,6 +12,15 @@ TimerDisplay::TimerDisplay()
     : timer_secondsM(60)
     , start_time_msM(0)
     , progress_barM(0, 0, 100, 12)
+    , idM(SDL_GetTicks())
+{
+}
+
+TimerDisplay::TimerDisplay(int timer_seconds)
+    : timer_secondsM(timer_seconds)
+    , start_time_msM(0)
+    , progress_barM(0, 0, 100, 12)
+    , idM(SDL_GetTicks())
 {
 }
 
@@ -19,6 +29,8 @@ void TimerDisplay::set_timer_value(int seconds) {
 }
 
 void TimerDisplay::update() {
+    if (start_time_msM == 0)
+        return;
     auto now = SDL_GetTicks();
     auto progress_secondsM = (now - start_time_msM);
 
@@ -26,6 +38,7 @@ void TimerDisplay::update() {
 }
 
 void TimerDisplay::reset() {
+    std::println("Timer Reset");
     start_time_msM = 0;
     progress_barM.reset();
 }
@@ -76,8 +89,8 @@ void TimerDisplay::draw_header() {
 
 void TimerDisplay::draw_timer_text() {
     char time_buffer[32];
-    auto progress_secondsM = (SDL_GetTicks() - start_time_msM) / 1000;
-    format_time(timer_secondsM - progress_secondsM, time_buffer, sizeof(time_buffer));
+    auto progress_seconds = (start_time_msM != 0 ? (SDL_GetTicks() - start_time_msM) / 1000 : 0);
+    format_time(timer_secondsM - progress_seconds, time_buffer, sizeof(time_buffer));
     
     // Large font for timer display
     ImGui::PushFont(NULL, 30.0f);
@@ -139,7 +152,7 @@ void TimerDisplay::draw_control_buttons() {
     
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);  // Make circular
     
-    const char* play_text = start_time_msM != 0 ? ICON_FA_PAUSE : ICON_FA_PLAY;
+    const char* play_text = (start_time_msM != 0 ? ICON_FA_PAUSE : ICON_FA_PLAY);
     if (ImGui::Button(play_text, ImVec2(button_size, button_size)))
         this->start();
     
@@ -166,11 +179,14 @@ void TimerDisplay::draw_control_buttons() {
 
 void TimerDisplay::start() {
     start_time_msM = SDL_GetTicks();
+    std::println("Starting timer: {}", start_time_msM);
 }
 
 void TimerDisplay::draw(SDL_Renderer* renderer) {
     ImGui::SetNextWindowBgAlpha(0.3);
-    ImGui::Begin("Timer Display", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+
+    ImGui::SetNextWindowSizeConstraints({150.0f, 150.0f}, {FLT_MAX, FLT_MAX});
+    ImGui::Begin(std::format("Timer Display ##{}", idM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
 
     // Draw header with label and action buttons
     draw_header();
