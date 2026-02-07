@@ -246,6 +246,7 @@ std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer) {
     if (focusM != FocusType::None) {
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        ImGui::SetNextWindowSizeConstraints({-1, -1}, {-1, -1});
     }
 
     ImGui::Begin(std::format("Timer Display ##{},{}", idM, (int)focusM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
