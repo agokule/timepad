@@ -17,7 +17,7 @@ public:
     void set_timer_value(int seconds);
     
     // update the timer's progress
-    void update();
+    void update_progress_bar();
 
     void start();
     
@@ -34,6 +34,8 @@ private:
     CircularProgressBar progress_barM;
     int timer_secondsM;
     unsigned long start_time_msM;
+    unsigned long paused_time_msM;
+    unsigned long paused_time_start_msM;
     unsigned long idM;
     FocusType focusM;
     
@@ -41,6 +43,7 @@ private:
     std::optional<FocusState> draw_header();
     void draw_timer_text();
     void draw_control_buttons();
+    unsigned long calculate_time_progress_ms();
     void format_time(int seconds, char* buffer, size_t buffer_size);
 };
 

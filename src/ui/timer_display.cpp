@@ -13,6 +13,8 @@
 TimerDisplay::TimerDisplay() 
     : timer_secondsM(60)
     , start_time_msM(0)
+    , paused_time_msM(0)
+    , paused_time_start_msM(0)
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
     , focusM(FocusType::None)
@@ -22,6 +24,8 @@ TimerDisplay::TimerDisplay()
 TimerDisplay::TimerDisplay(int timer_seconds)
     : timer_secondsM(timer_seconds)
     , start_time_msM(0)
+    , paused_time_msM(0)
+    , paused_time_start_msM(0)
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
     , focusM(FocusType::None)
@@ -32,18 +36,14 @@ void TimerDisplay::set_timer_value(int seconds) {
     timer_secondsM = seconds;
 }
 
-void TimerDisplay::update() {
-    if (start_time_msM == 0)
-        return;
-    auto now = SDL_GetTicks();
-    auto progress_secondsM = (now - start_time_msM);
-
-    progress_barM.set_progress((float)progress_secondsM / (timer_secondsM * 1000));
+void TimerDisplay::update_progress_bar() {
+    progress_barM.set_progress(calculate_time_progress_ms() / (timer_secondsM * 1000.0f));
 }
 
 void TimerDisplay::reset() {
     std::println("Timer Reset");
     start_time_msM = 0;
+    paused_time_msM = 0;
     progress_barM.reset();
 }
 
@@ -52,6 +52,18 @@ void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
     int minutes = (seconds % 3600) / 60;
     int secs = seconds % 60;
     snprintf(buffer, buffer_size, "%02d:%02d:%02d", hours, minutes, secs);
+}
+
+unsigned long TimerDisplay::calculate_time_progress_ms() {
+    if (start_time_msM == 0)
+        return 0;
+    auto now = SDL_GetTicks();
+    auto paused_time_ms = paused_time_msM;
+    if (paused_time_start_msM != 0)
+        paused_time_ms += now - paused_time_start_msM;
+
+    auto progress_ms = (now - start_time_msM) - paused_time_ms;
+    return progress_ms;
 }
 
 std::optional<FocusState> TimerDisplay::draw_header() {
@@ -114,7 +126,7 @@ std::optional<FocusState> TimerDisplay::draw_header() {
 
 void TimerDisplay::draw_timer_text() {
     char time_buffer[32];
-    auto progress_seconds = (start_time_msM != 0 ? (SDL_GetTicks() - start_time_msM) / 1000 : 0);
+    auto progress_seconds = (start_time_msM != 0 ? calculate_time_progress_ms() / 1000 : 0);
     format_time(timer_secondsM - progress_seconds, time_buffer, sizeof(time_buffer));
     
     // Large font for timer display
@@ -177,9 +189,25 @@ void TimerDisplay::draw_control_buttons() {
     
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);  // Make circular
     
-    const char* play_text = (start_time_msM != 0 ? ICON_FA_PAUSE : ICON_FA_PLAY);
-    if (ImGui::Button(play_text, ImVec2(button_size, button_size)))
-        this->start();
+    const char* play_text = nullptr;
+    if (start_time_msM == 0)
+        play_text = ICON_FA_PLAY;
+    else if (paused_time_start_msM == 0)
+        play_text = ICON_FA_PAUSE;
+    else
+        play_text = ICON_FA_PLAY;
+    if (ImGui::Button(play_text, ImVec2(button_size, button_size))) {
+        if (start_time_msM == 0)
+            this->start();
+        else if (paused_time_start_msM == 0)
+            paused_time_start_msM = SDL_GetTicks();
+        else if (paused_time_start_msM != 0) {
+            paused_time_msM += SDL_GetTicks() - paused_time_start_msM;
+            paused_time_start_msM = 0;
+
+            std::println("{} {} {}", paused_time_start_msM, paused_time_msM, start_time_msM);
+        }
+    }
     
     ImGui::PopStyleVar();
     
@@ -247,6 +275,7 @@ std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer) {
     progress_barM.set_radius(radius);
 
     // Draw the circular progress bar
+    update_progress_bar();
     progress_barM.draw(renderer);
     
     // Draw control buttons at the bottom

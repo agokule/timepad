@@ -97,7 +97,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
         if (state.current_tab == CurrentTab::Timer) {
             for (TimerDisplay& timer : state.timers) {
-                timer.update();
                 auto focus_state = timer.draw(renderer);
                 if (focus_state.has_value())
                     state.focus_state = *focus_state;
