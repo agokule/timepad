@@ -84,37 +84,39 @@ std::optional<FocusState> TimerDisplay::draw_header() {
     format_time(timer_secondsM, time_buffer, sizeof(time_buffer));
     ImGui::Text("%s", time_buffer);
     
-    // Right side - action buttons
-    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80 + (defualt_button_size - button_size) * 2);
-    
     // Expand button
-    const char* icon = ICON_FA_EXPAND;
-    if (focusM == FocusType::Fullscreen)
-        icon = ICON_FA_COMPRESS;
-    if (ImGui::Button(icon, ImVec2(button_size, button_size))) {
-        if (focusM == FocusType::None)
+    if (focusM != FocusType::Popout) {
+        // Right side - action buttons
+        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80 + (defualt_button_size - button_size) * 2);
+
+        const char* icon = ICON_FA_EXPAND;
+        if (focusM == FocusType::Fullscreen)
+            icon = ICON_FA_COMPRESS;
+        if (ImGui::Button(icon, ImVec2(button_size, button_size))) {
+            if (focusM == FocusType::None)
+                return_val = {
+                    {WhatIsFullscreen::Timer},
+                    FocusType::Fullscreen ,
+                    {idM}
+                };
+            else if (focusM == FocusType::Fullscreen)
+                return_val = {
+                    std::nullopt,
+                    FocusType::None,
+                    std::nullopt,
+                };
+        }
+        
+        ImGui::SameLine();
+        
+        // Picture-In-Picture button
+        if (ImGui::Button(ICON_MS_PIP, ImVec2(button_size, button_size)))
             return_val = {
                 {WhatIsFullscreen::Timer},
-                FocusType::Fullscreen ,
+                FocusType::Popout,
                 {idM}
             };
-        else if (focusM == FocusType::Fullscreen)
-            return_val = {
-                std::nullopt,
-                FocusType::None,
-                std::nullopt,
-            };
     }
-    
-    ImGui::SameLine();
-    
-    // Picture-In-Picture button
-    if (ImGui::Button(ICON_MS_PIP, ImVec2(button_size, button_size)))
-        return_val = {
-            {WhatIsFullscreen::Timer},
-            FocusType::Popout,
-            {idM}
-        };
 
     if (button_size < defualt_button_size)
         ImGui::PopFont();

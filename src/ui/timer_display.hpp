@@ -29,6 +29,8 @@ public:
 
     const CircularProgressBar& get_progress() const { return progress_barM; }
     const unsigned long& get_id() const { return idM; }
+    FocusType get_focus_type() const { return focusM; }
+    void set_focus_type(FocusType new_type) { focusM = new_type; }
 
 private:
     CircularProgressBar progress_barM;
