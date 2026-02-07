@@ -33,7 +33,7 @@ target_include_directories(Timepad PRIVATE
     ./dependencies/imgui/misc/cpp
     ./dependencies/imgui/backends/
     ./dependencies/SDL3/include/
-    ./dependencies/FontAwesome/
+    ./dependencies/IconFontCppHeaders/
 )
 
 add_subdirectory(./dependencies/SDL3/ EXCLUDE_FROM_ALL)
