@@ -3,6 +3,7 @@
 #include "SDL3/SDL_video.h"
 #include "ui/timer_display.hpp"
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <print>
 
@@ -20,6 +21,10 @@
 #include "ui/sidebar.hpp"
 #include "ui/timer_creater.hpp"
 #include <vector>
+#include "miniaudio.h"
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 struct PopoutWindow {
     SDL_Window* window;
@@ -39,6 +44,7 @@ struct AppState {
     TimerCreater timer_creater;
     FocusState focus_state;
     std::vector<PopoutWindow> popouts;
+    ma_engine audio_engine;
 };
 
 void configure_imgui_ctx() {
@@ -160,6 +166,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
     *appstate = state;
 
+    ma_result result;
+    result = ma_engine_init(NULL, &state->audio_engine);
+    if (result != MA_SUCCESS) {
+        return SDL_APP_FAILURE;
+    }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -277,6 +289,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     AppState *state = static_cast<AppState *>(appstate);
+    ma_engine_uninit(&state->audio_engine);
     ImGui_ImplSDL3_Shutdown();
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui::DestroyContext();

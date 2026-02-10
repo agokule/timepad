@@ -23,6 +23,7 @@ add_executable(Timepad ${CLIENT_SOURCES}
     ./dependencies/imgui/backends/imgui_impl_sdl3.cpp
     ./dependencies/imgui/backends/imgui_impl_sdlrenderer3.cpp
     ./dependencies/imgui/misc/cpp/imgui_stdlib.cpp
+    ./dependencies/miniaudio/miniaudio.cpp
 )
 target_compile_definitions(Timepad PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 
@@ -34,6 +35,7 @@ target_include_directories(Timepad PRIVATE
     ./dependencies/imgui/backends/
     ./dependencies/SDL3/include/
     ./dependencies/IconFontCppHeaders/
+    ./dependencies/miniaudio/
 )
 
 add_subdirectory(./dependencies/SDL3/ EXCLUDE_FROM_ALL)
