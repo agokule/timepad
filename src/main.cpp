@@ -1,6 +1,7 @@
 #include "SDL3/SDL_init.h"
 #include "SDL3/SDL_stdinc.h"
 #include "SDL3/SDL_video.h"
+#include "audio_player.hpp"
 #include "ui/timer_display.hpp"
 #include <algorithm>
 #include <chrono>
@@ -44,7 +45,7 @@ struct AppState {
     TimerCreater timer_creater;
     FocusState focus_state;
     std::vector<PopoutWindow> popouts;
-    ma_engine audio_engine;
+    AudioPlayer audio_player {"./assets/sound/freesound_community-kitchen-timer-87485.mp3"};
 };
 
 void configure_imgui_ctx() {
@@ -166,12 +167,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
     *appstate = state;
 
-    ma_result result;
-    result = ma_engine_init(NULL, &state->audio_engine);
-    if (result != MA_SUCCESS) {
-        return SDL_APP_FAILURE;
-    }
-
     return SDL_APP_CONTINUE;
 }
 
@@ -219,7 +214,7 @@ void render_popout_window(AppState& app, PopoutWindow& popout) {
 
     for (auto& timer : app.timers)
         if (timer.get_id() == id)
-            timer.draw(popout.renderer);
+            timer.draw(popout.renderer, app.audio_player);
     
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), popout.renderer);
@@ -255,7 +250,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
                 *state.focus_state.id_of_focussed != timer.get_id())
                 continue;
 
-            auto focus_state = timer.draw(renderer);
+            auto focus_state = timer.draw(renderer, state.audio_player);
             if (focus_state.has_value() && focus_state->type != FocusType::Popout)
                 state.focus_state = *focus_state;
             else if (focus_state.has_value() && focus_state->type == FocusType::Popout) {
@@ -289,7 +284,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result) {
     AppState *state = static_cast<AppState *>(appstate);
-    ma_engine_uninit(&state->audio_engine);
     ImGui_ImplSDL3_Shutdown();
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui::DestroyContext();

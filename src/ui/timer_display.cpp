@@ -237,7 +237,7 @@ void TimerDisplay::start() {
     std::println("Starting timer: {}", start_time_msM);
 }
 
-std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer) {
+std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer, AudioPlayer& ap) {
     ImGui::SetNextWindowBgAlpha(0.3);
 
     std::optional<FocusState> return_val = std::nullopt; 
@@ -283,6 +283,15 @@ std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer) {
     
     // Draw control buttons at the bottom
     draw_control_buttons();
+
+    constexpr unsigned timer_sound_goes_off_ms = 10'500;
+    if ((timer_secondsM * 1000) - calculate_time_progress_ms() <= timer_sound_goes_off_ms &&
+        !ap.is_playing_or_not() && start_time_msM != 0) {
+
+        ap.play();
+        if (timer_secondsM * 1000 < timer_sound_goes_off_ms)
+            ap.seek_to(timer_sound_goes_off_ms / 1000.0 - timer_secondsM);
+    }
 
     ImGui::End();
 

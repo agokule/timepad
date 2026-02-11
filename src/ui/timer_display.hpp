@@ -4,6 +4,7 @@
 #include "circular_progress_bar.hpp"
 #include <SDL3/SDL.h>
 #include "appstate.hpp"
+#include "audio_player.hpp"
 
 class TimerDisplay {
 public:
@@ -11,7 +12,7 @@ public:
     TimerDisplay(int timer_seconds);
 
     // Draw the timer UI
-    std::optional<FocusState> draw(SDL_Renderer* renderer);
+    std::optional<FocusState> draw(SDL_Renderer* renderer, AudioPlayer& ap);
 
     // Set the timer value (total time) in seconds
     void set_timer_value(int seconds);
