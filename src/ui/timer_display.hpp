@@ -23,7 +23,7 @@ public:
     void start();
     
     // Reset the timer
-    void reset();
+    void reset(AudioPlayer& ap);
     
     // Set the label text (e.g., "1 min")
     void set_label(const char* label);
@@ -45,7 +45,7 @@ private:
     // Helper methods
     std::optional<FocusState> draw_header();
     void draw_timer_text();
-    void draw_control_buttons();
+    void draw_control_buttons(AudioPlayer& ap);
     unsigned long calculate_time_progress_ms();
     void format_time(int seconds, char* buffer, size_t buffer_size);
 };

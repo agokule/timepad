@@ -44,16 +44,14 @@ public:
 
     void play() {
         ma_sound_start(&sound);
-        is_playing = true;
     }
 
     void pause() {
         ma_sound_stop(&sound);
-        is_playing = false;
     }
 
     bool is_playing_or_not() {
-        return is_playing;
+        return ma_sound_is_playing(&sound);
     }
 
     inline ma_uint32 get_sample_rate() const {
@@ -71,5 +69,4 @@ private:
 
     ma_uint64 length_in_frames;
     ma_uint32 sample_rate;
-    bool is_playing = false;
 };

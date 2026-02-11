@@ -3,6 +3,7 @@
 #include "IconsMaterialSymbols.h"
 #include "SDL3/SDL_timer.h"
 #include "appstate.hpp"
+#include "audio_player.hpp"
 #include "imgui.h"
 #include "ui/circular_progress_bar.hpp"
 #include <algorithm>
@@ -41,12 +42,17 @@ void TimerDisplay::update_progress_bar() {
     progress_barM.set_progress(calculate_time_progress_ms() / (timer_secondsM * 1000.0f));
 }
 
-void TimerDisplay::reset() {
+void TimerDisplay::reset(AudioPlayer& ap) {
     std::println("Timer Reset");
     start_time_msM = 0;
     paused_time_msM = 0;
     paused_time_start_msM = 0;
     progress_barM.reset();
+
+    if (ap.is_playing_or_not()) {
+        ap.pause();
+        ap.seek_to(0);
+    }
 }
 
 void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
@@ -165,7 +171,7 @@ void TimerDisplay::draw_timer_text() {
     ImGui::PopFont();
 }
 
-void TimerDisplay::draw_control_buttons() {
+void TimerDisplay::draw_control_buttons(AudioPlayer& ap) {
     ImVec2 window_size = ImGui::GetWindowSize();
     float defualt_button_size = 50.0f;
     float button_size = defualt_button_size;
@@ -230,7 +236,7 @@ void TimerDisplay::draw_control_buttons() {
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);  // Make circular
     
     if (ImGui::Button(ICON_MS_RESTORE, ImVec2(button_size, button_size))) {
-        reset();
+        reset(ap);
     }
     
     ImGui::PopStyleVar();
@@ -288,7 +294,7 @@ std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer, AudioPlayer
     progress_barM.draw(renderer);
     
     // Draw control buttons at the bottom
-    draw_control_buttons();
+    draw_control_buttons(ap);
 
     constexpr unsigned timer_sound_goes_off_ms = 10'500;
     if ((timer_secondsM * 1000) - calculate_time_progress_ms() <= timer_sound_goes_off_ms &&
