@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "ui/circular_progress_bar.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <optional>
 #include <print>
@@ -130,7 +131,8 @@ std::optional<FocusState> TimerDisplay::draw_header() {
 void TimerDisplay::draw_timer_text() {
     char time_buffer[32];
     auto progress_seconds = (start_time_msM != 0 ? calculate_time_progress_ms() / 1000 : 0);
-    format_time(timer_secondsM - progress_seconds, time_buffer, sizeof(time_buffer));
+    auto time_to_format = (long)timer_secondsM - (long)progress_seconds;
+    format_time(std::max(0l, time_to_format), time_buffer, sizeof(time_buffer));
     
     // Large font for timer display
     ImGui::PushFont(NULL, 30.0f);
@@ -155,7 +157,10 @@ void TimerDisplay::draw_timer_text() {
     ImGui::SetCursorPos(ImVec2(window_center.x - text_size.x * 0.5f, 
                                 window_center.y - text_size.y * 0.5f));
     
-    ImGui::TextColored(ImVec4(0.263f, 0.49f, 0.525f, 1.0f), "%s", time_buffer);
+    auto color = ImVec4(0.263f, 0.49f, 0.525f, 1.0f);
+    if (calculate_time_progress_ms() >= timer_secondsM * 1000)
+        color.w = std::abs(std::sin(calculate_time_progress_ms() / 500.0));
+    ImGui::TextColored(color, "%s", time_buffer);
     
     ImGui::PopFont();
 }
