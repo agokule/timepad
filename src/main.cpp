@@ -1,12 +1,7 @@
-#include "SDL3/SDL_init.h"
-#include "SDL3/SDL_stdinc.h"
-#include "SDL3/SDL_video.h"
 #include "audio_player.hpp"
 #include "ui/timer_display.hpp"
 #include <algorithm>
-#include <chrono>
 #include <iostream>
-#include <print>
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
@@ -16,14 +11,11 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 #include <thread>
-#include "IconsFontAwesome7.h"
-#include "IconsMaterialSymbols.h"
 #include "appstate.hpp"
 #include "ui/sidebar.hpp"
 #include "ui/timer_creater.hpp"
 #include <vector>
 #include "miniaudio.h"
-#include <chrono>
 
 using namespace std::chrono_literals;
 

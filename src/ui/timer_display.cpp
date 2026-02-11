@@ -255,13 +255,17 @@ std::optional<FocusState> TimerDisplay::draw(SDL_Renderer* renderer, AudioPlayer
     std::optional<FocusState> return_val = std::nullopt; 
 
     ImGui::SetNextWindowSizeConstraints({150.0f, 150.0f}, {FLT_MAX, FLT_MAX});
+    
+    ImGui::SetNextWindowSize({350.0f, 350.0f}, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos({300, 300}, ImGuiCond_FirstUseEver);
+
     if (focusM != FocusType::None) {
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
         ImGui::SetNextWindowSizeConstraints({-1, -1}, {-1, -1});
     }
 
-    ImGui::Begin(std::format("Timer Display ##{},{}", idM, (int)focusM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(std::format("Timer Display ##{},{}", idM, (int)focusM).c_str(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings);
 
     // Draw header with label and action buttons
     return_val = draw_header();
