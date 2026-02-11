@@ -44,6 +44,7 @@ void TimerDisplay::reset() {
     std::println("Timer Reset");
     start_time_msM = 0;
     paused_time_msM = 0;
+    paused_time_start_msM = 0;
     progress_barM.reset();
 }
 
