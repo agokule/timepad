@@ -1,4 +1,6 @@
 #include "audio_player.hpp"
+#include "ui/stopwatch_creator.hpp"
+#include <print>
 #include "ui/timer_display.hpp"
 #include <algorithm>
 #include <iostream>
@@ -35,6 +37,8 @@ struct AppState {
     CurrentTab current_tab;
     std::vector<TimerDisplay> timers;
     TimerCreater timer_creater;
+    StopwatchCreator stopwatch_creator;
+    std::vector<StopwatchDisplay> stopwatches;
     FocusState focus_state;
     std::vector<PopoutWindow> popouts;
     AudioPlayer audio_player {"./assets/sound/freesound_community-kitchen-timer-87485.mp3"};
@@ -110,9 +114,16 @@ void destroy_popout_window(PopoutWindow& popout, AppState& state) {
     SDL_DestroyWindow(popout.window);
     
     popout.should_close = true;
-    for (auto& timer : state.timers)
-        if (timer.get_id() == *popout.focus_state.id_of_focussed)
-            timer.set_focus_type(FocusType::None);
+
+    if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Timer) {
+        for (auto& timer : state.timers)
+            if (timer.get_id() == *popout.focus_state.id_of_focussed)
+                timer.set_focus_type(FocusType::None);
+    } else if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Stopwatch) {
+        for (auto& sw : state.stopwatches)
+            if (sw.get_id() == *popout.focus_state.id_of_focussed)
+                sw.set_focus_type(FocusType::None);
+    }
 
     ImGui::SetCurrentContext(state.main_imgui_ctx);
 }
@@ -204,9 +215,15 @@ void render_popout_window(AppState& app, PopoutWindow& popout) {
     
     auto id = *popout.focus_state.id_of_focussed;
 
-    for (auto& timer : app.timers)
-        if (timer.get_id() == id)
-            timer.draw(popout.renderer, app.audio_player);
+    if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Timer) {
+        for (auto& timer : app.timers)
+            if (timer.get_id() == id)
+                timer.draw(popout.renderer, app.audio_player);
+    } else if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Stopwatch) {
+        for (auto& sw : app.stopwatches)
+            if (sw.get_id() == id)
+                sw.draw();
+    }
     
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), popout.renderer);
@@ -255,6 +272,29 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
             auto new_timer = state.timer_creater.draw();
             if (new_timer.has_value())
                 state.timers.push_back(*new_timer);
+        }
+    } else if (state.current_tab == CurrentTab::Stopwatch) {
+        if (state.focus_state.type == FocusType::None){
+            auto stopwatch = state.stopwatch_creator.draw();
+            if (stopwatch.has_value())
+                state.stopwatches.push_back(*stopwatch);
+        }
+
+        for (auto& sw : state.stopwatches) {
+            if (sw.get_focus_type() == FocusType::Popout)
+                continue;
+            if (state.focus_state.type == FocusType::Fullscreen &&
+                *state.focus_state.what_is_focused == WhatIsFullscreen::Stopwatch &&
+                *state.focus_state.id_of_focussed != sw.get_id())
+                continue;
+
+            auto focus_state = sw.draw();
+            if (focus_state.has_value() && focus_state->type != FocusType::Popout)
+                state.focus_state = *focus_state;
+            else if (focus_state.has_value() && focus_state->type == FocusType::Popout) {
+                create_popout_window(state, *focus_state);
+                state.focus_state = {};
+            }
         }
     }
 
