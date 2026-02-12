@@ -42,12 +42,19 @@ std::optional<FocusState> StopwatchDisplay::draw_header() {
     std::optional<FocusState> return_val = std::nullopt;
 
     ImGui::BeginGroup();
-    float button_size = 35.0f;
+    float default_button_size = 35.0f;
+    float button_size = default_button_size;
+    ImVec2 window_size = ImGui::GetWindowSize();
+
+    if (std::min(window_size.x, window_size.y) < 250.0f) {
+        button_size = 20.0f;
+        ImGui::PushFont(nullptr, ImGui::GetFontSize() - 5.0f);
+    }
     
     // Expand button
     if (focusM != FocusType::Popout) {
         // Right side - action buttons
-        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80);
+        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80 + (default_button_size - button_size) * 2);
 
         const char* icon = ICON_FA_EXPAND;
         if (focusM == FocusType::Fullscreen)
@@ -78,6 +85,9 @@ std::optional<FocusState> StopwatchDisplay::draw_header() {
                 {idM}
             };
     }
+
+    if (button_size < default_button_size)
+        ImGui::PopFont();
     
     ImGui::EndGroup();
 
@@ -104,26 +114,38 @@ void StopwatchDisplay::draw_stopwatch_text() {
     float center_x = window_size.x * 0.5f;
     float center_y = window_size.y * 0.45f;
     
-    // Large font for time display
-    ImGui::PushFont(nullptr, 40.0f);
+    // Large font for timer display - dynamically sized
+    ImGui::PushFont(NULL, 40.0f);
     
-    // Calculate text size and center it
+    // Calculate text size and optimal font size based on window
     ImVec2 text_size = ImGui::CalcTextSize(time_buffer);
+    float surface_area_ratio = (text_size.x * text_size.y) / (center_x * center_y);
+    float optimal_font_size {};
+    if (surface_area_ratio >= 0.15f)
+        optimal_font_size = 40.0f - 14 * surface_area_ratio;
+    else
+        optimal_font_size = 40.0f + (1 / surface_area_ratio * 0.6f);
+    
+    ImGui::PopFont();
+    ImGui::PushFont(nullptr, optimal_font_size);
+    text_size = ImGui::CalcTextSize(time_buffer);
+    
+    // Center the text
     ImGui::SetCursorPos(ImVec2(center_x - text_size.x * 0.5f, 
                                 center_y - text_size.y * 0.5f));
     
-    ImGui::TextColored(ImVec4(0.2f, 0.2f, 0.2f, 1.0f), "%s", time_buffer);
+    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "%s", time_buffer);
     
     ImGui::PopFont();
     
     // Draw labels (hr, min, sec) below the time
-    ImGui::PushFont(nullptr, 12.0f);
+    float label_font_size = std::max(10.0f, optimal_font_size * 0.25f);
+    ImGui::PushFont(nullptr, label_font_size);
     
     // Calculate positions for labels
     float label_y = center_y + text_size.y * 0.5f + 5.0f;
     
     // Calculate approximate positions for each label
-    // This is a rough estimate based on the spacing of the time digits
     float char_width = text_size.x / 11.0f; // Approximate width per character
     
     // "hr" label position
@@ -146,13 +168,25 @@ void StopwatchDisplay::draw_stopwatch_text() {
 
 void StopwatchDisplay::draw_control_buttons() {
     ImVec2 window_size = ImGui::GetWindowSize();
-    float button_size = 50.0f;
+    float default_button_size = 40.0f;
+    float button_size = default_button_size;
     float spacing = 20.0f;
+
+    if (std::min(window_size.x, window_size.y) < 175.0f) {
+        button_size = 20.0f;
+        spacing = 10.0f;
+    } else if (std::min(window_size.x, window_size.y) < 250.0f) {
+        button_size = 30.0f;
+        spacing = 10.0f;
+    }
     
-    // Calculate center position for buttons (3 buttons now)
-    float total_width = button_size * 3 + spacing * 2;
+    // Calculate center position for buttons (2 buttons now)
+    float total_width = button_size * 2 + spacing;
     float start_x = (window_size.x - total_width) * 0.5f;
-    float button_y = window_size.y - 80.0f;
+    float button_y = window_size.y - 50.0f + (default_button_size - button_size);
+
+    if (button_size < default_button_size)
+        ImGui::PushFont(nullptr, ImGui::GetFontSize() - 0.3f * (default_button_size - button_size));
     
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
     
@@ -200,18 +234,6 @@ void StopwatchDisplay::draw_control_buttons() {
     
     ImGui::SameLine(0.0f, spacing);
     
-    // Lap button
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);
-    
-    if (ImGui::Button(ICON_FA_FLAG, ImVec2(button_size, button_size))) {
-        // TODO: Implement lap functionality
-        std::println("Lap button pressed");
-    }
-    
-    ImGui::PopStyleVar();
-    
-    ImGui::SameLine(0.0f, spacing);
-    
     // Reset button
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, button_size * 0.5f);
     
@@ -224,6 +246,9 @@ void StopwatchDisplay::draw_control_buttons() {
     }
     
     ImGui::PopStyleVar();
+
+    if (button_size < default_button_size)
+        ImGui::PopFont();
 }
 
 std::optional<FocusState> StopwatchDisplay::draw() {
@@ -231,7 +256,7 @@ std::optional<FocusState> StopwatchDisplay::draw() {
     
     std::optional<FocusState> return_val = std::nullopt;
     
-    ImGui::SetNextWindowSizeConstraints({300.0f, 200.0f}, {FLT_MAX, FLT_MAX});
+    ImGui::SetNextWindowSizeConstraints({150.0f, 150.0f}, {FLT_MAX, FLT_MAX});
     ImGui::SetNextWindowSize({400.0f, 300.0f}, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos({300, 300}, ImGuiCond_FirstUseEver);
     
