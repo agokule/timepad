@@ -1,0 +1,19 @@
+pkgbase = timepad
+	pkgdesc = A simple, elegant timer and stopwatch application built with C++23, SDL3, and ImGui
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/agokule/timepad
+	arch = x86_64
+	license = custom
+	makedepends = cmake
+	makedepends = gcc
+	makedepends = git
+	depends = gcc-libs
+	depends = wayland
+	depends = libxkbcommon
+	depends = libpulse
+	depends = alsa-lib
+	source = timepad::git+https://github.com/agokule/timepad.git
+	sha256sums = SKIP
+
+pkgname = timepad
