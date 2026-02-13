@@ -1,4 +1,5 @@
 # Maintainer: Your Name <your.email@example.com>
+# NOTE: Before submitting to AUR, replace the maintainer information above with your actual name and email
 pkgname=timepad
 pkgver=0.1.0
 pkgrel=1
@@ -53,6 +54,7 @@ EOF
     # Install documentation
     install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
     
-    # TODO: Add license file installation once LICENSE file exists
+    # NOTE: Before submitting to AUR with 'custom' license, add a LICENSE file to the repository
+    # and uncomment the following line:
     # install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
