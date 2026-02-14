@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 include(FetchContent)
 
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -Wall -O2")
+
 project(Timepad LANGUAGES CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
