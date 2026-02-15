@@ -298,9 +298,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         }
     }
 
-    if (state.focus_state.type == FocusType::None)
-        ImGui::ShowDemoWindow();
-
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
