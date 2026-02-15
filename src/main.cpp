@@ -68,8 +68,7 @@ void configure_sdl_renderer(SDL_Renderer* renderer) {
 void create_popout_window(AppState& app, FocusState focus) {
     PopoutWindow popout = {};
     
-    // Create window with slight offset for each new popout
-    int offset = app.popouts.size() * 30;
+    // Create window for each new popout
     popout.window = SDL_CreateWindow(
         "Timer Popout", 
         200, 200, 
