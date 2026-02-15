@@ -18,6 +18,7 @@
 #include "ui/timer_creater.hpp"
 #include <vector>
 #include "miniaudio.h"
+#include "constants.hpp"
 
 using namespace std::chrono_literals;
 
@@ -41,21 +42,21 @@ struct AppState {
     std::vector<StopwatchDisplay> stopwatches;
     FocusState focus_state;
     std::vector<PopoutWindow> popouts;
-    AudioPlayer audio_player {"./assets/sound/freesound_community-kitchen-timer-87485.mp3"};
+    AudioPlayer audio_player {ASSETS_FOLDER "sound/freesound_community-kitchen-timer-87485.mp3"};
 };
 
 void configure_imgui_ctx() {
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/Roboto-Regular.ttf", 17.0f);
+    io.Fonts->AddFontFromFileTTF(ASSETS_FOLDER "fonts/Roboto-Regular.ttf", 17.0f);
 
     // merge in icons from Font Awesome
     ImFontConfig icons_config; 
     icons_config.MergeMode = true; 
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Regular-400.otf", 0.0f, &icons_config);
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/Font Awesome 7 Free-Solid-900.otf", 0.0f, &icons_config);
-    io.Fonts->AddFontFromFileTTF("./assets/fonts/MaterialSymbolsRounded-Regular.ttf", 0.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF(ASSETS_FOLDER "fonts/Font Awesome 7 Free-Regular-400.otf", 0.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF(ASSETS_FOLDER "fonts/Font Awesome 7 Free-Solid-900.otf", 0.0f, &icons_config);
+    io.Fonts->AddFontFromFileTTF(ASSETS_FOLDER "fonts/MaterialSymbolsRounded-Regular.ttf", 0.0f, &icons_config);
 
     ImGui::StyleColorsDark();
 }
