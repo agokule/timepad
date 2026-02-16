@@ -2,7 +2,7 @@
 
 Everything was going mostly well after I started dual booting Windows and Arch linux, except that I wasn't able to find a good timer app which had a sort of picture-in-picture mode, just like the Windows timer app.
 
-So I made this (no that is literally the reason why I made this app).
+So I made this app to fill in that gap.
 
 ## Installation
 
