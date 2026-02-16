@@ -142,6 +142,7 @@ std::optional<FocusState> TimerDisplay::draw_header() {
 void TimerDisplay::draw_timer_text() {
     auto progress_seconds = (start_time_msM != 0 ? calculate_time_progress_ms() / 1000 : 0);
     auto time_to_format = (long)timer_secondsM - (long)progress_seconds;
+    auto text = format_time(time_to_format);
     
     // Large font for timer display
     ImGui::PushFont(NULL, 30.0f);
@@ -152,7 +153,7 @@ void TimerDisplay::draw_timer_text() {
     window_center.y *= 0.45f;
     
     // Calculate text size and center it
-    ImVec2 text_size = ImGui::CalcTextSize(titleM.c_str());
+    ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
     float surface_area_ratio = (text_size.x * text_size.y) / (window_center.x * window_center.y);
     float optimal_font_size {};
     if (surface_area_ratio >= 0.15f)
@@ -161,7 +162,7 @@ void TimerDisplay::draw_timer_text() {
         optimal_font_size = 32.0f + (1 / surface_area_ratio * 0.7f);
     ImGui::PopFont();
     ImGui::PushFont(nullptr, optimal_font_size);
-    text_size = ImGui::CalcTextSize(titleM.c_str());
+    text_size = ImGui::CalcTextSize(text.c_str());
 
     ImGui::SetCursorPos(ImVec2(window_center.x - text_size.x * 0.5f, 
                                 window_center.y - text_size.y * 0.5f));
@@ -169,7 +170,7 @@ void TimerDisplay::draw_timer_text() {
     auto color = ImVec4(0.263f, 0.49f, 0.525f, 1.0f);
     if (calculate_time_progress_ms() >= timer_secondsM * 1000)
         color.w = std::abs(std::sin(calculate_time_progress_ms() / 500.0));
-    ImGui::TextColored(color, "%s", titleM.c_str());
+    ImGui::TextColored(color, "%s", text.c_str());
     
     ImGui::PopFont();
 }

@@ -34,7 +34,7 @@ public:
     const unsigned long& get_id() const { return idM; }
     FocusType get_focus_type() const { return focusM; }
     void set_focus_type(FocusType new_type) { focusM = new_type; }
-    bool is_done() const { return calculate_time_progress_ms() >= timer_secondsM; }
+    bool is_done() const { return calculate_time_progress_ms() >= timer_secondsM * 1000; }
 
 private:
     CircularProgressBar progress_barM;

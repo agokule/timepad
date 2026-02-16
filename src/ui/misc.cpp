@@ -3,7 +3,9 @@
 #include "IconsFontAwesome7.h"
 #include <format>
 
-void TimerInput(int* hours, int* minutes, int* seconds) {
+void TimerInput(const char* label, int* hours, int* minutes, int* seconds) {
+    if (label)
+        ImGui::PushID(label);
     constexpr const char* std_formats[] = { "{} h", "{} m", "{} s" };
     constexpr const char* c_formats[] = { "%d h", "%d m", "%d s" };
     constexpr const char* ids[] = { "h", "m", "s" };
@@ -26,6 +28,12 @@ void TimerInput(int* hours, int* minutes, int* seconds) {
                 "Click and drag to edit value.\n"
                 "Hold Shift or Alt for faster/slower edit.\n"
                 "Double-Click or Ctrl+Click to input value.");
+
+    ImGui::SameLine();
+    if (label) {
+        ImGui::Text("%s", label);
+        ImGui::PopID();
+    }
 }
 
 // taken from the imgui example code and modified

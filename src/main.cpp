@@ -1,4 +1,6 @@
 #include "audio_player.hpp"
+#include "ui/misc.hpp"
+#include "ui/pomodoro_timer.hpp"
 #include "ui/stopwatch_creator.hpp"
 #include <print>
 #include "ui/timer_display.hpp"
@@ -31,6 +33,13 @@ struct PopoutWindow {
     bool should_close;
 };
 
+struct PomodoroTimerCreator {
+    // 30 min * 60sec/min = number of seconds per 30min
+    unsigned work_time_s = 30 * 60;
+    unsigned break_time_s = 5 * 60;
+    unsigned repeat = 3;
+};
+
 struct AppState {
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -42,6 +51,8 @@ struct AppState {
     std::vector<StopwatchDisplay> stopwatches;
     FocusState focus_state;
     std::vector<PopoutWindow> popouts;
+    PomodoroTimerCreator pomodoro_creator;
+    std::optional<PomodoroTimer> pomodoro_timer;
     AudioPlayer audio_player {ASSETS_FOLDER "sound/freesound_community-kitchen-timer-87485.mp3"};
 };
 
@@ -123,7 +134,8 @@ void destroy_popout_window(PopoutWindow& popout, AppState& state) {
         for (auto& sw : state.stopwatches)
             if (sw.get_id() == *popout.focus_state.id_of_focussed)
                 sw.set_focus_type(FocusType::None);
-    }
+    } else if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Pomodoro && state.pomodoro_timer.has_value())
+        state.pomodoro_timer->set_focus_type(FocusType::None);
 
     ImGui::SetCurrentContext(state.main_imgui_ctx);
 }
@@ -213,16 +225,21 @@ void render_popout_window(AppState& app, PopoutWindow& popout) {
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
     
-    auto id = *popout.focus_state.id_of_focussed;
+    auto id = popout.focus_state.id_of_focussed;
 
     if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Timer) {
         for (auto& timer : app.timers)
-            if (timer.get_id() == id)
+            if (timer.get_id() == *id)
                 timer.draw(popout.renderer, app.audio_player);
     } else if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Stopwatch) {
         for (auto& sw : app.stopwatches)
-            if (sw.get_id() == id)
+            if (sw.get_id() == *id)
                 sw.draw();
+    } else if (*popout.focus_state.what_is_focused == WhatIsFullscreen::Pomodoro) {
+        if (app.pomodoro_timer.has_value())
+            app.pomodoro_timer->draw(popout.renderer, app.audio_player);
+        if ((app.pomodoro_timer.has_value() && app.pomodoro_timer->is_done()) || !app.pomodoro_timer.has_value())
+            popout.should_close = true;
     }
     
     ImGui::Render();
@@ -296,6 +313,39 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
                 state.focus_state = {};
             }
         }
+    } else if (state.current_tab == CurrentTab::PomodoroTimer) {
+        if (!state.pomodoro_timer.has_value()) {
+            static int break_h {}, break_m {5}, break_s {};
+            static int work_h {}, work_m {30}, work_s {};
+            static int repeat {3};
+
+            ImGui::Begin("Start a pomodoro timer");
+            TimerInput("Work Time", &work_h, &work_m, &work_s);
+            TimerInput("Break Time", &break_h, &break_m, &break_s);
+            ImGui::InputInt("Repeat amount", &repeat);
+
+            if (ImGui::Button("Create"))
+                state.pomodoro_timer.emplace(
+                        work_h * 3600 + work_m * 60 + work_s,
+                        break_h * 3600 + break_m * 60 + break_s,
+                        repeat);
+            ImGui::End();
+        } else if (state.pomodoro_timer->get_focus_type() != FocusType::Popout) {
+            auto focus_state = state.pomodoro_timer->draw(renderer, state.audio_player);
+            if (focus_state.has_value() && focus_state->type != FocusType::Popout)
+                state.focus_state = *focus_state;
+            else if (focus_state.has_value() && focus_state->type == FocusType::Popout) {
+                create_popout_window(state, *focus_state);
+                state.focus_state = {};
+            }
+        }
+        if (state.pomodoro_timer.has_value() && state.pomodoro_timer->is_done())
+            state.pomodoro_timer.reset();
+
+    } else if (state.current_tab == CurrentTab::Alarms) {
+        ImGui::Begin("Under Construction");
+        ImGui::Text("This part of the app is not done yet, check back after an update!");
+        ImGui::End();
     }
 
     ImGui::Render();
@@ -303,8 +353,14 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     SDL_RenderPresent(renderer);
 
-    for (auto& popout : state.popouts) {
+    for (auto it = state.popouts.begin(); it != state.popouts.end(); it++) {
+        auto& popout = *it;
         render_popout_window(state, popout);
+        if (popout.should_close) {
+            destroy_popout_window(popout, state);
+            it = state.popouts.erase(it);
+            if (it == state.popouts.end()) break;
+        }
     }
     ImGui::SetCurrentContext(state.main_imgui_ctx);
 

@@ -11,7 +11,7 @@ std::optional<TimerDisplay> TimerCreater::draw() {
     std::optional<TimerDisplay> return_val = std::nullopt;
     ImGui::Begin("Create a Timer");
 
-    TimerInput(&hoursM, &minutesM, &secondsM);
+    TimerInput(nullptr, &hoursM, &minutesM, &secondsM);
 
     if (ImGui::Button("Create Timer")) {
         int sec = secondsM;

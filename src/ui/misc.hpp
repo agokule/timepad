@@ -1,6 +1,6 @@
 #pragma once
 
-void TimerInput(int* hours, int* minutes, int* seconds);
+void TimerInput(const char* label, int* hours, int* minutes, int* seconds);
 void HelpMarker(const char* desc);
 
 
