@@ -2,6 +2,7 @@
 #include "ui/misc.hpp"
 #include "ui/pomodoro_timer.hpp"
 #include "ui/stopwatch_creator.hpp"
+#include <cstdlib>
 #include <print>
 #include "ui/timer_display.hpp"
 #include <algorithm>
@@ -21,8 +22,10 @@
 #include <vector>
 #include "miniaudio.h"
 #include "constants.hpp"
+#include <filesystem>
 
 using namespace std::chrono_literals;
+namespace fs = std::filesystem;
 
 struct PopoutWindow {
     SDL_Window* window;
@@ -58,6 +61,23 @@ struct AppState {
 
 void configure_imgui_ctx() {
     ImGuiIO &io = ImGui::GetIO();
+
+#ifdef DISTRIBUTION
+    auto config_home = std::getenv("XDG_CONFIG_HOME");
+    fs::path global_config;
+    if (config_home)
+        global_config = config_home;
+    else {
+        fs::path home = std::getenv("HOME");
+        global_config = home / ".config/";
+    }
+    fs::path config_dir = global_config / "timepad/";
+    if (!fs::exists(config_dir))
+        fs::create_directory(config_dir);
+    fs::path ini_file = config_dir / "imgui.ini";
+    io.IniFilename = ini_file.c_str();
+#endif // ifdef DISTRIBUTION
+
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
     io.Fonts->AddFontFromFileTTF(ASSETS_FOLDER "fonts/Roboto-Regular.ttf", 17.0f);
