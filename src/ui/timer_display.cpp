@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <format>
 #include <optional>
 #include <print>
 
@@ -20,6 +21,7 @@ TimerDisplay::TimerDisplay()
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
     , focusM(FocusType::None)
+    , titleM(format_time(60))
 {
 }
 
@@ -31,6 +33,7 @@ TimerDisplay::TimerDisplay(int timer_seconds)
     , progress_barM(0, 0, 100, 12)
     , idM(SDL_GetTicks())
     , focusM(FocusType::None)
+    , titleM(format_time(timer_seconds))
 {
 }
 
@@ -55,14 +58,18 @@ void TimerDisplay::reset(AudioPlayer& ap) {
     }
 }
 
-void TimerDisplay::format_time(int seconds, char* buffer, size_t buffer_size) {
+std::string format_time(int seconds) {
     int hours = seconds / 3600;
     int minutes = (seconds % 3600) / 60;
     int secs = seconds % 60;
-    snprintf(buffer, buffer_size, "%02d:%02d:%02d", hours, minutes, secs);
+    return std::format("{:02}:{:02}:{:02}", hours, minutes, secs);
 }
 
-unsigned long TimerDisplay::calculate_time_progress_ms() {
+void TimerDisplay::set_label(std::string label) {
+    titleM = label;
+}
+
+unsigned long TimerDisplay::calculate_time_progress_ms() const {
     if (start_time_msM == 0)
         return 0;
     auto now = SDL_GetTicks();
@@ -88,9 +95,7 @@ std::optional<FocusState> TimerDisplay::draw_header() {
     }
     
     // Left side - label text
-    char time_buffer[32];
-    format_time(timer_secondsM, time_buffer, sizeof(time_buffer));
-    ImGui::Text("%s", time_buffer);
+    ImGui::Text("%s", titleM.c_str());
     
     // Expand button
     if (focusM != FocusType::Popout) {
@@ -135,10 +140,8 @@ std::optional<FocusState> TimerDisplay::draw_header() {
 }
 
 void TimerDisplay::draw_timer_text() {
-    char time_buffer[32];
     auto progress_seconds = (start_time_msM != 0 ? calculate_time_progress_ms() / 1000 : 0);
     auto time_to_format = (long)timer_secondsM - (long)progress_seconds;
-    format_time(std::max(0l, time_to_format), time_buffer, sizeof(time_buffer));
     
     // Large font for timer display
     ImGui::PushFont(NULL, 30.0f);
@@ -149,7 +152,7 @@ void TimerDisplay::draw_timer_text() {
     window_center.y *= 0.45f;
     
     // Calculate text size and center it
-    ImVec2 text_size = ImGui::CalcTextSize(time_buffer);
+    ImVec2 text_size = ImGui::CalcTextSize(titleM.c_str());
     float surface_area_ratio = (text_size.x * text_size.y) / (window_center.x * window_center.y);
     float optimal_font_size {};
     if (surface_area_ratio >= 0.15f)
@@ -158,7 +161,7 @@ void TimerDisplay::draw_timer_text() {
         optimal_font_size = 32.0f + (1 / surface_area_ratio * 0.7f);
     ImGui::PopFont();
     ImGui::PushFont(nullptr, optimal_font_size);
-    text_size = ImGui::CalcTextSize(time_buffer);
+    text_size = ImGui::CalcTextSize(titleM.c_str());
 
     ImGui::SetCursorPos(ImVec2(window_center.x - text_size.x * 0.5f, 
                                 window_center.y - text_size.y * 0.5f));
@@ -166,7 +169,7 @@ void TimerDisplay::draw_timer_text() {
     auto color = ImVec4(0.263f, 0.49f, 0.525f, 1.0f);
     if (calculate_time_progress_ms() >= timer_secondsM * 1000)
         color.w = std::abs(std::sin(calculate_time_progress_ms() / 500.0));
-    ImGui::TextColored(color, "%s", time_buffer);
+    ImGui::TextColored(color, "%s", titleM.c_str());
     
     ImGui::PopFont();
 }

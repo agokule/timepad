@@ -6,6 +6,8 @@
 #include "appstate.hpp"
 #include "audio_player.hpp"
 
+std::string format_time(int seconds);
+
 class TimerDisplay {
 public:
     TimerDisplay();
@@ -26,12 +28,13 @@ public:
     void reset(AudioPlayer& ap);
     
     // Set the label text (e.g., "1 min")
-    void set_label(const char* label);
+    void set_label(std::string label);
 
     const CircularProgressBar& get_progress() const { return progress_barM; }
     const unsigned long& get_id() const { return idM; }
     FocusType get_focus_type() const { return focusM; }
     void set_focus_type(FocusType new_type) { focusM = new_type; }
+    bool is_done() const { return calculate_time_progress_ms() >= timer_secondsM; }
 
 private:
     CircularProgressBar progress_barM;
@@ -41,13 +44,13 @@ private:
     unsigned long paused_time_start_msM;
     unsigned long idM;
     FocusType focusM;
+    std::string titleM;
     
     // Helper methods
     std::optional<FocusState> draw_header();
     void draw_timer_text();
     void draw_control_buttons(AudioPlayer& ap);
-    unsigned long calculate_time_progress_ms();
-    void format_time(int seconds, char* buffer, size_t buffer_size);
+    unsigned long calculate_time_progress_ms() const;
 };
 
 #endif // TIMER_DISPLAY_HPP
