@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=Timepad
+Comment=Timepad
+Exec=/bin/Timepad
+Terminal=false
+Type=Application
+Icon=/usr/share/timepad/icon.png
