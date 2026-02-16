@@ -8,6 +8,19 @@ So I made this (no that is literally the reason why I made this app).
 
 You can use AUR packages `timepad` or `timepad-git` to install this app with your favorite AUR helper.
 
+## Build from Source
+
+You can build this from source using the following commands:
+
+```bash
+git clone https://github.com/agokule/timepad.git --recurse-submodules
+cd timepad
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug # or Release
+cmake --build build # if you are using make, you can add "-- -j" to make it compile faster
+```
+
+Now the binary will be in `./build/Timepad`.
+
 ## Screenshots and Videos
 
 <img width="959" height="459" alt="image" src="https://github.com/user-attachments/assets/49374b52-d15d-42d0-a9f4-50d7a7564bb7" />
