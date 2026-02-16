@@ -15,7 +15,7 @@
 #include <thread>
 #include "appstate.hpp"
 #include "ui/sidebar.hpp"
-#include "ui/timer_creater.hpp"
+#include "ui/timer_creator.hpp"
 #include <vector>
 #include "miniaudio.h"
 #include "constants.hpp"
