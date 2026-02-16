@@ -74,7 +74,7 @@ void configure_imgui_ctx() {
     fs::path config_dir = global_config / "timepad/";
     if (!fs::exists(config_dir))
         fs::create_directory(config_dir);
-    fs::path ini_file = config_dir / "imgui.ini";
+    static fs::path ini_file = config_dir / "imgui.ini";
     io.IniFilename = ini_file.c_str();
 #endif // ifdef DISTRIBUTION
 
