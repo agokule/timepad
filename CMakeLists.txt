@@ -40,6 +40,13 @@ target_include_directories(Timepad PRIVATE
     ./dependencies/miniaudio/
 )
 
+option(DISTRIBUTION_MODE "Enable distribution mode" OFF)
+
+# Configure the preprocessor definitions based on build type
+if(DISTRIBUTION_MODE)
+    target_compile_definitions(Timepad PUBLIC DISTRIBUTION)
+endif()
+
 # Create an option to switch between a system sdl library and a vendored SDL library
 option(TIMEPAD_NOVENDORED "Don't use vendored libraries" OFF)
 
