@@ -13,7 +13,7 @@ You can use AUR packages `timepad` or `timepad-git` to install this app with you
 You can build this from source using the following commands:
 
 ```bash
-git clone https://github.com/agokule/timepad.git --recurse-submodules
+git clone https://github.com/agokule/timepad.git
 cd timepad
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug # or Release
 cmake --build build # if you are using make, you can add "-- -j" to make it compile faster
