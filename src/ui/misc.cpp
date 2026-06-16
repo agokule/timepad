@@ -29,8 +29,8 @@ void TimerInput(const char* label, int* hours, int* minutes, int* seconds) {
                 "Hold Shift or Alt for faster/slower edit.\n"
                 "Double-Click or Ctrl+Click to input value.");
 
-    ImGui::SameLine();
     if (label) {
+        ImGui::SameLine();
         ImGui::Text("%s", label);
         ImGui::PopID();
     }
